@@ -1,0 +1,24 @@
+{
+	"compilerOptions": {
+		"baseUrl": "./src",
+		"paths": {
+			"@/*": [".//*"]
+		},
+		"target": "es6",
+		"module": "Node16",
+		"sourceMap": true,
+		"lib": ["dom", "dom.iterable", "esnext"],
+		"strict": true,
+		"esModuleInterop": true,
+		"skipLibCheck": true,
+		"forceConsistentCasingInFileNames": true,
+		"noFallthroughCasesInSwitch": true,
+		// "resolveJsonModule": true,
+		"outDir": "./dist",
+		"typeRoots": ["node_modules/@types/", "./src/global.d.ts"],
+		"allowSyntheticDefaultImports": true
+		// "types": ["@types/jest", "@types/node"]
+	},
+	"include": ["src/**/*.ts"],
+	"exclude": ["node_modules"]
+}
