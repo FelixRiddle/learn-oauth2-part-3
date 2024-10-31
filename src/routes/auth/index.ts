@@ -105,9 +105,14 @@ export default function authRouter(models: Models) {
 				const user = await User.findOne({ email });
 
 				if (!user) {
-					return res
-						.status(401)
-						.json({ message: "Invalid credentials" });
+					return res.status(401).json({
+						messages: [
+							{
+								message: "User not found",
+								type: "error",
+							},
+						],
+					});
 				}
 
 				// Compare passwords
@@ -117,9 +122,14 @@ export default function authRouter(models: Models) {
 				);
 
 				if (!isValidPassword) {
-					return res
-						.status(401)
-						.json({ message: "Invalid credentials" });
+					return res.status(401).json({
+						messages: [
+							{
+								message: "Invalid email or password",
+								type: "error",
+							},
+						],
+					});
 				}
 
 				// Generate JWT token
@@ -134,7 +144,14 @@ export default function authRouter(models: Models) {
 					maxAge: 60 * 60 * 1000, // 1 hour
 				});
 
-				return res.json({ message: "Logged in successfully" });
+				return res.json({
+					messages: [
+						{
+							message: "Logged in successfully",
+							type: "success",
+						},
+					],
+				});
 			} catch (error) {
 				console.error(error);
 				return res.send({
