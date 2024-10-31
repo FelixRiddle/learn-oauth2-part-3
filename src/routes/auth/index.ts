@@ -1,12 +1,104 @@
-import express from "express";
+import express, { NextFunction, Request, Response } from "express";
 import Models from "felixriddle.mongodb-models";
+import jwt from "jsonwebtoken";
+import bcrypt from "bcrypt";
+
+import { jwtToken } from "@/config/env";
 
 /**
  * Auth routes
  */
 export default function authRouter(models: Models) {
 	const router = express.Router();
+
+	const { User } = models;
+
+	/**
+	 * Register route
+	 */
+	router.post(
+		"/register",
+		async (req: Request, res: Response, next: NextFunction) => {
+			try {
+				const { username, email, password } = req.body;
+
+				// Hash password
+				const hashedPassword = await bcrypt.hash(password, 10);
+
+				// Create new user
+				const user = await User.create({
+					username,
+					email,
+					password: hashedPassword,
+				});
+
+				// Generate JWT token
+				const token = jwt.sign({ userId: user._id }, jwtToken(), {
+					expiresIn: "1h",
+				});
+
+				// Set cookie with JWT token
+				res.cookie("token", token, {
+					httpOnly: true,
+					secure: process.env.NODE_ENV === "production",
+					maxAge: 60 * 60 * 1000, // 1 hour
+				});
+
+				return res.status(201).json({ message: "User created successfully" });
+			} catch (error) {
+				next(error);
+			}
+		}
+	);
+
+	/**
+	 * Login route
+	 */
+	router.post(
+		"/login",
+		async (req: Request, res: Response, next: NextFunction) => {
+			try {
+				const { email, password } = req.body;
+
+				// Find user by email
+				const user = await User.findOne({ email });
+
+				if (!user) {
+					return res
+						.status(401)
+						.json({ message: "Invalid credentials" });
+				}
+
+				// Compare passwords
+				const isValidPassword = await bcrypt.compare(
+					password,
+					user.password
+				);
+
+				if (!isValidPassword) {
+					return res
+						.status(401)
+						.json({ message: "Invalid credentials" });
+				}
+
+				// Generate JWT token
+				const token = jwt.sign({ userId: user._id }, jwtToken(), {
+					expiresIn: "1h",
+				});
+
+				// Set cookie with JWT token
+				res.cookie("token", token, {
+					httpOnly: true,
+					secure: process.env.NODE_ENV === "production",
+					maxAge: 60 * 60 * 1000, // 1 hour
+				});
+
+				res.json({ message: "Logged in successfully" });
+			} catch (error) {
+				next(error);
+			}
+		}
+	);
 	
-    
-    return router;
+	return router;
 }
