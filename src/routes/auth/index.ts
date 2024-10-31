@@ -22,6 +22,30 @@ export default function authRouter(models: Models) {
 			try {
 				const { username, email, password } = req.body;
 
+				// Validation
+				if (!username || !email || !password) {
+					return res.status(400).json({
+						messages: [
+							{
+								message: "All fields are required",
+								type: "error",
+							},
+						],
+					});
+				}
+
+				if (typeof password !== "string" || password.length < 8) {
+					return res.status(400).json({
+						message: [
+							{
+								message:
+									"Password must be at least 8 characters long",
+								type: "error",
+							},
+						],
+					});
+				}
+
 				// Hash password
 				const hashedPassword = await bcrypt.hash(password, 10);
 
@@ -44,9 +68,19 @@ export default function authRouter(models: Models) {
 					maxAge: 60 * 60 * 1000, // 1 hour
 				});
 
-				return res.status(201).json({ message: "User created successfully" });
+				return res
+					.status(201)
+					.json({ message: "User created successfully" });
 			} catch (error) {
-				next(error);
+				console.error(error);
+				return res.send({
+					messages: [
+						{
+							message: "Error 500: Internal error",
+							type: "error",
+						},
+					],
+				});
 			}
 		}
 	);
@@ -93,12 +127,20 @@ export default function authRouter(models: Models) {
 					maxAge: 60 * 60 * 1000, // 1 hour
 				});
 
-				res.json({ message: "Logged in successfully" });
+				return res.json({ message: "Logged in successfully" });
 			} catch (error) {
-				next(error);
+				console.error(error);
+				return res.send({
+					messages: [
+						{
+							message: "Error 500: Internal error",
+							type: "error",
+						},
+					],
+				});
 			}
 		}
 	);
-	
+
 	return router;
 }
