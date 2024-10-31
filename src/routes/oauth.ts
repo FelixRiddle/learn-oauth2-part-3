@@ -1,5 +1,5 @@
 import express from "express";
-import { OAuth2Server, Request, Response } from "oauth2-server";
+import OAuth2Server, { Request, Response } from "oauth2-server";
 import Models from "felixriddle.mongodb-models";
 
 import OAuth2 from "@/OAuth2";
@@ -7,7 +7,7 @@ import OAuth2 from "@/OAuth2";
 /**
  * Oauth routes
  */
-export default function oauthRoutes(expressApp: any, models: Models) {
+export default function oauthRoutes(models: Models) {
 	const router = express.Router();
 	
 	// Initialize the oauth server with a model representing the user principle
@@ -17,6 +17,7 @@ export default function oauthRoutes(expressApp: any, models: Models) {
 		allowBearerTokensInQueryString: true,
 	});
 	
+	// We need to create requests with 'new Request(req)', and use a middleware function to deal with these endpoints
 	router.get("/authorize", oauth2.authorize);
 	router.post("/token", oauth2.token);
 	router.get(
