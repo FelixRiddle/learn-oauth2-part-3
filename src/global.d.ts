@@ -3,6 +3,7 @@ import { Models } from "felixriddle.ts-app-models";
 
 import { User } from "./types/User";
 import { StatusMessage } from "types/StatusMessage";
+import { OAuth2Server } from "oauth2-server";
 
 declare module "express-session" {
 	interface Session {
