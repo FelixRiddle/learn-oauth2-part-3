@@ -20,10 +20,10 @@ export default function authRouter(models: Models) {
 		"/register",
 		async (req: Request, res: Response, next: NextFunction) => {
 			try {
-				const { username, email, password } = req.body;
+				const { name, username, email, password } = req.body;
 
 				// Validation
-				if (!username || !email || !password) {
+				if (!name || !username || !email || !password) {
 					return res.status(400).json({
 						messages: [
 							{
@@ -54,6 +54,7 @@ export default function authRouter(models: Models) {
 					username,
 					email,
 					password: hashedPassword,
+					name,
 				});
 
 				// Generate JWT token
@@ -68,9 +69,15 @@ export default function authRouter(models: Models) {
 					maxAge: 60 * 60 * 1000, // 1 hour
 				});
 
-				return res
-					.status(201)
-					.json({ message: "User created successfully" });
+				return res.status(201).json({
+					user,
+					messages: [
+						{
+							message: "User registered successfully",
+							type: "success",
+						},
+					],
+				});
 			} catch (error) {
 				console.error(error);
 				return res.send({
