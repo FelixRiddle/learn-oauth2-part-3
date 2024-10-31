@@ -1,5 +1,5 @@
 import Models from "felixriddle.mongodb-models";
-import { AuthorizationCode, Client, Falsey, User } from "oauth2-server";
+import { AuthorizationCode, Client, Falsey, Token, User } from "oauth2-server";
 import { v4 as uuidv4 } from "uuid";
 
 /**
@@ -130,7 +130,12 @@ export default class OAuth2 {
 	/**
 	 * Save token
 	 */
-	async saveToken(token: any, client: any, user: any) {
+	async saveToken(
+		token: any,
+		client: Client,
+		user: User
+	): Promise<Token | Falsey> {
+		// Create access token
 		await this.OAuthAccessTokens.create({
 			accessToken: token.accessToken,
 			accessTokenExpiresAt: token.accessTokenExpiresAt,
@@ -140,6 +145,7 @@ export default class OAuth2 {
 			userId: user.id,
 		});
 
+		// If refresh token exists create it too
 		if (token.refreshToken) {
 			await this.OAuthRefreshTokens.create({
 				refreshToken: token.refreshToken,
@@ -150,7 +156,7 @@ export default class OAuth2 {
 				userId: user.id,
 			});
 		}
-
+		
 		return {
 			accessToken: token.accessToken,
 			accessTokenExpiresAt: token.accessTokenExpiresAt,
@@ -159,14 +165,11 @@ export default class OAuth2 {
 			scope: token.scope,
 			client: {
 				id: client.id,
+				grants: client.grants,
 			},
 			user: {
 				id: user.id,
 			},
-
-			// other formats, i.e. for Zapier
-			access_token: token.accessToken,
-			refresh_token: token.refreshToken,
 		};
 	}
 
