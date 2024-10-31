@@ -3,16 +3,6 @@ import { AuthorizationCode, Client, Falsey, User } from "oauth2-server";
 import { v4 as uuidv4 } from "uuid";
 
 /**
- * OAuth2 Error
- */
-class OAuth2Error extends Error {
-	constructor(message: string) {
-		super(message);
-		this.name = "OAuth2Error";
-	}
-}
-
-/**
  * OAuth2
  *
  * Has to follow this specification:
@@ -37,18 +27,25 @@ export default class OAuth2 {
 	/**
 	 * Get client
 	 */
-	async getClient(clientId: string, clientSecret?: string) {
+	async getClient(
+		clientId: string,
+		clientSecret?: string
+	): Promise<Client | Falsey> {
 		const client = await this.OAuthClients.findOne({
 			clientId,
 			...(clientSecret && { clientSecret }),
 		}).lean();
 
 		if (!client) {
-			throw new Error("Client not found");
+			return false; // Return false instead of null
+		}
+
+		if (!client.callbackUrl) {
+			return false;
 		}
 
 		return {
-			id: client.clientId,
+			id: client.clientId!,
 			grants: client.grants,
 			redirectUris: [client.callbackUrl],
 		};
@@ -274,8 +271,18 @@ export default class OAuth2 {
 	/**
 	 * Validate client redirect URI
 	 */
-	async validateClientRedirectUri(clientId: string, redirectUri: string) {
+	async validateClientRedirectUri(
+		clientId: string,
+		redirectUri: string
+	): Promise<boolean> {
 		const client = await this.getClient(clientId);
+
+		// Check if client exists
+		if (!client || !client.redirectUris) {
+			return false;
+		}
+
+		// Check if redirect URI is valid
 		return client.redirectUris.includes(redirectUri);
 	}
 }
