@@ -1,5 +1,9 @@
 import express from "express";
-import OAuth2Server, { Request, Response } from "oauth2-server";
+import OAuth2Server, {
+	AccessDeniedError,
+	Request,
+	Response,
+} from "oauth2-server";
 import Models from "felixriddle.mongodb-models";
 
 import OAuth2 from "@/OAuth2";
@@ -17,18 +21,85 @@ export default function oauthRoutes(models: Models) {
 		allowBearerTokensInQueryString: true,
 	});
 
+	router.get(
+		"/authenticate",
+		async (req, res) => {
+			const request = new Request(req);
+			const response = new Response(res);
+			return oauth2
+				.authenticate(request, response)
+				.then((token) => {
+					// The request was successfully authenticated.
+					return res.send({
+						token,
+					});
+				})
+				.catch((err) => {
+					// The request failed authentication.
+					return res.status(err.code || 500).send({
+						messages: [
+							{
+								message: "Error: " + err.message,
+								type: "error",
+							},
+						],
+					});
+				});
+		}
+		// Not working for some reason
+		// expressApp.oauth.test
+	);
+
 	// We need to create requests with 'new Request(req)', and use a middleware function to deal with these endpoints
 	router.get("/authorize", async (req, res) => {
 		const request = new Request(req);
 		const response = new Response(res);
-		await oauth2
+		return await oauth2
 			.authorize(request, response)
 			.then((token) => {
+				// The resource owner granted the access request.
 				return res.send({
 					token,
 				});
 			})
 			.catch((err) => {
+				if (err instanceof AccessDeniedError) {
+					// The resource owner denied the access request.
+					return res.status(err.code || 500).send({
+						messages: [
+							{
+								message: "Access Denied",
+								type: "error",
+							},
+						],
+					});
+				} else {
+					// Access was not granted due to some other error condition.
+					return res.status(err.code || 500).send({
+						messages: [
+							{
+								message: "Error: " + err.message,
+								type: "error",
+							},
+						],
+					});
+				}
+			});
+	});
+
+	router.post("/token", async (req, res) => {
+		const request = new Request(req);
+		const response = new Response(res);
+		return await oauth2
+			.token(request, response)
+			.then((token) => {
+				// The resource owner granted the access request.
+				return res.json({
+					token,
+				});
+			})
+			.catch((err) => {
+				// The request was invalid or not authorized.
 				return res.status(err.code || 500).send({
 					messages: [
 						{
@@ -38,23 +109,7 @@ export default function oauthRoutes(models: Models) {
 					],
 				});
 			});
-		
-		return res.status(500).send({
-			messages: [
-				{
-					message: "Error: ",
-					type: "error",
-				},
-			],
-		});
 	});
-	router.post("/token", oauth2.token);
-	router.get(
-		"/authenticate",
-		oauth2.authenticate
-		// Not working for some reason
-		// expressApp.oauth.test
-	);
 
 	// // Function to generate the access token bases on the Oauth2Server request
 	// router.post("/token", (req, res, next) => {
