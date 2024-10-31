@@ -156,7 +156,7 @@ export default class OAuth2 {
 				userId: user.id,
 			});
 		}
-		
+
 		return {
 			accessToken: token.accessToken,
 			accessTokenExpiresAt: token.accessTokenExpiresAt,
@@ -176,21 +176,23 @@ export default class OAuth2 {
 	/**
 	 * Get access token
 	 */
-	async getAccessToken(accessToken: string) {
+	async getAccessToken(accessToken: string): Promise<Token | Falsey> {
 		const token = await this.OAuthAccessTokens.findOne({ accessToken });
+
 		if (!token) {
-			throw new Error("Refresh token not found");
+			return false; // Return false instead of null or undefined
 		}
 
 		return {
-			accessToken: token.accessToken,
-			accessTokenExpiresAt: token.accessTokenExpiresAt,
-			scope: token.scope,
+			accessToken: token.accessToken!,
+			accessTokenExpiresAt: token.accessTokenExpiresAt!,
+			scope: token.scope!,
 			client: {
-				id: token.clientId,
+				id: token.clientId!,
+				grants: [],
 			},
 			user: {
-				id: token.userId,
+				id: token.userId!,
 			},
 		};
 	}
