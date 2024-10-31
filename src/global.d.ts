@@ -21,6 +21,10 @@ declare module "express-session" {
 
 declare global {
 	namespace Express {
+		interface Application {
+		  oauth: OAuth2Server;
+		}
+		
 		interface Request {
 			user?: User;
 			messages: Array<StatusMessage>;

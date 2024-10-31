@@ -8,6 +8,15 @@ import Models from "felixriddle.mongodb-models";
 export default function oauthRoutes(expressApp: any, models: Models) {
 	const router = express.Router();
 
+	router.get("/authorize", expressApp.oauth.authorize);
+	router.post("/token", expressApp.oauth.token);
+	router.get(
+		"/authenticate",
+		expressApp.oauth.authenticate
+		// Not working for some reason
+		// expressApp.oauth.test
+	);
+
 	// Function to generate the access token bases on the Oauth2Server request
 	router.post("/token", (req, res, next) => {
 		const requ = new Request(req);
@@ -39,14 +48,16 @@ export default function oauthRoutes(expressApp: any, models: Models) {
 				return res.status(err.code || 500).json(err);
 			});
 	});
-	
+
 	// This can only be called by an authenticated request
 	router.get("/secure", (req, res) => {
 		return res.send({
-			messages: [{
-				message: "Authenticated secure endpoint",
-                type: "success"
-			}]
+			messages: [
+				{
+					message: "Authenticated secure endpoint",
+					type: "success",
+				},
+			],
 		});
 	});
 

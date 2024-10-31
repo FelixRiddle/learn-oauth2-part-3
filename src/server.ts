@@ -1,17 +1,17 @@
 import express from "express";
 import Models from "felixriddle.mongodb-models";
 import bodyParser from "body-parser";
+import OAuth2Server from "oauth2-server";
 
 import oauthRoutes from "@/routes/oauth";
 import userRoutes from "@/routes/user";
-import { OAuth2Server } from "oauth2-server";
 import OAuth2 from "@/OAuth2";
 
 /**
  * Run express server
  */
 export default function runExpressServer(models: Models, port: number) {
-	const app: any = express();
+	const app = express();
 	
 	app.use(bodyParser.urlencoded({ extended: true }));
 	app.use(bodyParser.json());
