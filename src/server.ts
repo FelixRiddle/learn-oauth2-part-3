@@ -16,13 +16,6 @@ export default function runExpressServer(models: Models, port: number) {
 	app.use(bodyParser.urlencoded({ extended: true }));
 	app.use(bodyParser.json());
 	
-	// Initialize the oauth server with a model representing the user principle
-	// the model servers as the entity to query users from databases or LDAP or Active Directory
-	app.oauth = new OAuth2Server({
-		model: new OAuth2(models),
-		allowBearerTokensInQueryString: true,
-	});
-	
 	app.use("/oauth", oauthRoutes(app, models));
 	app.use("/user", userRoutes(models));
 	

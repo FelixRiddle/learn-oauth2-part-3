@@ -1,8 +1,6 @@
 # Learn oauth2 part 2
 
-Following [this tutorial](https://riteshshergill.medium.com/create-your-own-oauth-server-with-node-js-075023722edb)
-
-A lot of declarations use as any, the reason is that right now I don't have the time to deal with ts types
+I was follwing [this tutorial](https://riteshshergill.medium.com/create-your-own-oauth-server-with-node-js-075023722edb), but now I'm going to do it another way.
 
 ## Environment variables
 
