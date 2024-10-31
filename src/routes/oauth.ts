@@ -9,20 +9,49 @@ import OAuth2 from "@/OAuth2";
  */
 export default function oauthRoutes(models: Models) {
 	const router = express.Router();
-	
+
 	// Initialize the oauth server with a model representing the user principle
 	// the model servers as the entity to query users from databases or LDAP or Active Directory
 	const oauth2 = new OAuth2Server({
 		model: new OAuth2(models),
 		allowBearerTokensInQueryString: true,
 	});
-	
+
 	// We need to create requests with 'new Request(req)', and use a middleware function to deal with these endpoints
-	router.get("/authorize", oauth2.authorize);
+	router.get("/authorize", async (req, res) => {
+		const request = new Request(req);
+		const response = new Response(res);
+		await oauth2
+			.authorize(request, response)
+			.then((token) => {
+				return res.send({
+					token,
+				});
+			})
+			.catch((err) => {
+				return res.status(err.code || 500).send({
+					messages: [
+						{
+							message: "Error: " + err.message,
+							type: "error",
+						},
+					],
+				});
+			});
+		
+		return res.status(500).send({
+			messages: [
+				{
+					message: "Error: ",
+					type: "error",
+				},
+			],
+		});
+	});
 	router.post("/token", oauth2.token);
 	router.get(
 		"/authenticate",
-		oauth2.authenticate,
+		oauth2.authenticate
 		// Not working for some reason
 		// expressApp.oauth.test
 	);

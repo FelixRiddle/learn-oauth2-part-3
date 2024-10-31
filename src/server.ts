@@ -1,8 +1,10 @@
 import express from "express";
 import Models from "felixriddle.mongodb-models";
 import bodyParser from "body-parser";
+import cookieParser from "cookie-parser";
 
 import mainRouter from "@/routes";
+import { jwtToken } from "@/config/env";
 
 /**
  * Run express server
@@ -13,6 +15,8 @@ export default function runExpressServer(models: Models, port: number) {
 	app.use(bodyParser.urlencoded({ extended: true }));
 	app.use(bodyParser.json());
 	
+	app.use(cookieParser(jwtToken()));
+
 	app.use(mainRouter(models));
 	
 	app.listen(port, () => {
