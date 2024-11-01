@@ -177,6 +177,7 @@ export default class OAuth2 {
 	 * Get access token
 	 */
 	async getAccessToken(accessToken: string): Promise<Token | Falsey> {
+		console.log(`Get access token: ${accessToken}`);
 		const token = await this.OAuthAccessTokens.findOne({ accessToken });
 
 		if (!token) {
